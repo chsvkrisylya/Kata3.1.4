@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
@@ -29,7 +30,7 @@ public class RestApiController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getUsers() {
-        return new ResponseEntity<>(userService.findAll(),HttpStatus.OK);
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
     @PostMapping("/users")
@@ -41,7 +42,7 @@ public class RestApiController {
         try {
             userService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (UserException u) {
+        } catch (UserException u) {
             throw new UserException("User with username exist");
         }
     }
@@ -53,15 +54,15 @@ public class RestApiController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUser (@PathVariable("id") long id) {
+    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
         User user = userService.getById(id);
-        return new ResponseEntity<>(user,HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<User> getUserByUsername (Principal principal) {
+    public ResponseEntity<User> getUserByUsername(Principal principal) {
         User user = userService.findByUsername(principal.getName());
-        return new ResponseEntity<>(user,HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping("/users/{id}")
@@ -83,7 +84,7 @@ public class RestApiController {
                 userService.save(user);
             }
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (UserException u) {
+        } catch (UserException u) {
             throw new UserException("User with username exist");
         }
     }

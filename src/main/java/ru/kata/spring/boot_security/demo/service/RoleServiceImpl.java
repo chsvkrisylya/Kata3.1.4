@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class RoleServiceImpl implements RoleService{
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
 
@@ -34,6 +34,6 @@ public class RoleServiceImpl implements RoleService{
 
     @Override
     public Set<Role> findByIdRoles(List<Long> roles) {
-      return new HashSet<>(roleRepository.findAllById(roles));
+        return new HashSet<>(roleRepository.findAllById(roles));
     }
 }
