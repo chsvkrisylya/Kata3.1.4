@@ -1,7 +1,7 @@
 package ru.kata.spring.boot_security.demo.controller;
 
-import ru.kata.spring.boot_security.demo.Exception.UserMsg;
-import ru.kata.spring.boot_security.demo.Exception.UserException;
+import ru.kata.spring.boot_security.demo.exceptions.UserMsg;
+import ru.kata.spring.boot_security.demo.exceptions.UserException;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
