@@ -1,47 +1,65 @@
-let roleList = [
-    {id: 1, role: "ROLE_USER"},
-    {id: 2, role: "ROLE_ADMIN"}
-]
+const roleList = [
+    { id: 1, role: "ROLE_USER" },
+    { id: 2, role: "ROLE_ADMIN" }
+];
+
 let isUser = true;
 
 $(async function () {
-    await getUser();
-    await infoUser();
-    await tittle();
-    await getUsers();
-    await getNewUserForm();
-    await getDefaultModal();
-    await createUser();
-
-})
+    try {
+        await Promise.all([
+            getUser(),
+            infoUser(),
+            tittle(),
+            getUsers(),
+            getNewUserForm(),
+            getDefaultModal(),
+            createUser()
+        ]);
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+});
 
 const userFetch = {
-    head: {
+    headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Referer': null
     },
-    findAllUsers: async () => await fetch('api/users'),
-    findUserByUsername: async () => await fetch(`api/user`),
-    findOneUser: async (id) => await fetch(`api/users/${id}`),
-    addNewUser: async (user) => await fetch('api/users', {method: 'POST', headers: userFetch.head, body: JSON.stringify(user)}),
-    updateUser: async (user, id) => await fetch(`api/users/${id}`, {method: 'PUT', headers: userFetch.head, body: JSON.stringify(user)}),
-    deleteUser: async (id) => await fetch(`api/users/${id}`, {method: 'DELETE', headers: userFetch.head})
-}
+    findAllUsers: () => fetch('api/users'),
+    findUserByUsername: () => fetch(`api/user`),
+    findOneUser: (id) => fetch(`api/users/${id}`),
+    addNewUser: (user) => fetch('api/users', {
+        method: 'POST',
+        headers: userFetch.headers,
+        body: JSON.stringify(user)
+    }),
+    updateUser: (user, id) => fetch(`api/users/${id}`, {
+        method: 'PUT',
+        headers: userFetch.headers,
+        body: JSON.stringify(user)
+    }),
+    deleteUser: (id) => fetch(`api/users/${id}`, {
+        method: 'DELETE',
+        headers: userFetch.headers
+    })
+};
 
 async function infoUser() {
-    let temp = '';
     const info = document.querySelector('#info');
-    await userFetch.findUserByUsername()
-        .then(res => res.json())
-        .then(user => {
-            temp += `
-             <span style="color: white">
-               ${user.username} with roles <span>${user.roles.map(e => " " + e.role.substr(5))}</span>
-                </div>
+
+    try {
+        const response = await userFetch.findUserByUsername();
+        const user = await response.json();
+
+        info.innerHTML = `
+            <span style="color: white">
+                ${user.username} с ролями <span>${user.roles.map(e => " " + e.role.substr(5)).join(', ')}</span>
             </span>
-                </tr>
-            `;
-        });
-    info.innerHTML = temp;
+        `;
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        info.innerHTML = '<span style="color: red">Ошибка загрузки информации о пользователе.</span>';
+    }
 }

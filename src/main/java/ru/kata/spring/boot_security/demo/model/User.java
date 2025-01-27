@@ -14,6 +14,10 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @NotEmpty
+    @Column(unique = true)
+    private String username;
+
     private String name;
 
     private String surname;
@@ -21,10 +25,6 @@ public class User implements UserDetails {
     private byte age;
 
     private String email;
-
-    @NotEmpty
-    @Column(unique = true)
-    private String username;
 
     @NotEmpty
     private String password;

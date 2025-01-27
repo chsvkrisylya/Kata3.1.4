@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 public class RestApiController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
     @Autowired
-    public RestApiController(RoleService roleService, UserService userService) {
+    public RestApiController(RoleService roleService, UserService userService, RoleService roleService1) {
         this.userService = userService;
+        this.roleService = roleService1;
     }
 
     @GetMapping("/users")
@@ -36,8 +38,7 @@ public class RestApiController {
     @PostMapping("/users")
     public ResponseEntity<UserMsg> createUser(@Valid @RequestBody User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            String error = getErrorsFromBindingResult(bindingResult);
-            return new ResponseEntity<>(new UserMsg(error), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new UserMsg("Ошибка"), HttpStatus.BAD_REQUEST);
         }
         try {
             userService.save(user);
@@ -50,7 +51,7 @@ public class RestApiController {
     @DeleteMapping("/users/{id}")
     public ResponseEntity<UserMsg> pageDelete(@PathVariable("id") long id) {
         userService.deleteById(id);
-        return new ResponseEntity<>(new UserMsg("User deleted"), HttpStatus.OK);
+        return new ResponseEntity<>(new UserMsg("Юзер удален"), HttpStatus.OK);
     }
 
     @GetMapping("/users/{id}")
@@ -70,11 +71,11 @@ public class RestApiController {
                                             @Valid @RequestBody User user,
                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            String error = getErrorsFromBindingResult(bindingResult);
-            return new ResponseEntity<>(new UserMsg(error), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(new UserMsg("Ошибка"));
         }
         try {
-            String oldPassword = userService.getById(id).getPassword();
+            User existingUser = userService.getById(id);
+            String oldPassword = existingUser.getPassword();
             if (oldPassword.equals(user.getPassword())) {
                 System.out.println("TRUE");
                 user.setPassword(oldPassword);
@@ -83,16 +84,9 @@ public class RestApiController {
                 System.out.println("FALSE");
                 userService.save(user);
             }
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (UserException u) {
-            throw new UserException("User with username exist");
+            return ResponseEntity.ok().build();
+        } catch (UserException e) {
+            throw new UserException("User with username exists");
         }
-    }
-
-    private String getErrorsFromBindingResult(BindingResult bindingResult) {
-        return bindingResult.getFieldErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining("; "));
     }
 }

@@ -1,59 +1,72 @@
 async function createUser() {
-    $('#addUser').click(async () =>  {
-        let addUserForm = $('#addForm')
-        let username = addUserForm.find('#usernameCreate').val().trim();
-        let password = addUserForm.find('#passwordCreate').val().trim();
-        let name = addUserForm.find('#nameCreate').val().trim();
-        let surname = addUserForm.find('#surnameCreate').val().trim();
-        let age = addUserForm.find('#ageCreate').val().trim();
-        let email = addUserForm.find('#emailCreate').val().trim();
-        let checkedRoles = () => {
-            let array = []
-            let options = document.querySelector('#rolesCreate').options
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].selected) {
-                    array.push(roleList[i])
-                }
-            }
-            return array;
-        }
-        let data = {
-            username: username,
-            password: password,
-            name: name,
-            surname: surname,
-            age: age,
-            email: email,
-            roles: checkedRoles()
-        }
+    $('#addUser').click(async () => {
+        const addUserForm = $('#addForm');
+        const userData = collectUserData(addUserForm);
 
-        const response = await userFetch.addNewUser(data);
+        const response = await userFetch.addNewUser(userData);
+
         if (response.ok) {
-            await getUsers();
-            addUserForm.find('#usernameCreate').val('');
-            addUserForm.find('#passwordCreate').val('');
-            addUserForm.find('#nameCreate').val('');
-            addUserForm.find('#surnameCreate').val('');
-            addUserForm.find('#ageCreate').val('');
-            addUserForm.find('#emailCreate').val('');
-            addUserForm.find(checkedRoles()).val('');
-            let alert = `<div class="alert alert-success alert-dismissible fade show col-12" role="alert" id="successMessage">
-                         User create successful!
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>`;
-            addUserForm.prepend(alert);
-            $('.nav-tabs a[href="#adminTable"]').tab('show');
+            await handleSuccessfulUserCreation(addUserForm);
         } else {
-            let body = await response.json();
-            let alert = `<div class="alert alert-danger alert-dismissible fade show col-12" role="alert" id="messageError">
-                            ${body.info}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>`;
-            addUserForm.prepend(alert);
+            await handleErrorResponse(addUserForm, response);
         }
     });
+}
+
+function collectUserData(form) {
+    const roles = getSelectedRoles();
+    return {
+        username: form.find('#usernameCreate').val().trim(),
+        password: form.find('#passwordCreate').val().trim(),
+        name: form.find('#nameCreate').val().trim(),
+        surname: form.find('#surnameCreate').val().trim(),
+        age: form.find('#ageCreate').val().trim(),
+        email: form.find('#emailCreate').val().trim(),
+        roles: roles
+    };
+
+    function getSelectedRoles() {
+        const selectedRoles = [];
+        const options = document.querySelector('#rolesCreate').options;
+
+        for (let option of options) {
+            if (option.selected) {
+                selectedRoles.push(roleList[option.index]);
+            }
+        }
+        return selectedRoles;
+    }
+}
+
+async function handleSuccessfulUserCreation(form) {
+    await getUsers();
+    clearForm(form);
+    showAlert(form, 'User created successfully!', 'success');
+    $('.nav-tabs a[href="#adminTable"]').tab('show');
+}
+
+function clearForm(form) {
+    form.find('#usernameCreate').val('');
+    form.find('#passwordCreate').val('');
+    form.find('#nameCreate').val('');
+    form.find('#surnameCreate').val('');
+    form.find('#ageCreate').val('');
+    form.find('#emailCreate').val('');
+}
+
+function showAlert(form, message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alert = `
+        <div class="alert ${alertClass} alert-dismissible fade show col-12" role="alert" id="messageAlert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>`;
+    form.prepend(alert);
+}
+
+async function handleErrorResponse(form, response) {
+    const body = await response.json();
+    showAlert(form, body.info, 'error');
 }
